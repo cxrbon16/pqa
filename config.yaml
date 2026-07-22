@@ -49,14 +49,15 @@ generation:
   questions_per_passage: 2
   model:
     name: generator
-    # Gemma 4 31B (dense, en güçlü tekil model), bf16 (16-bit) ile — G4'ün (~96GB VRAM) bol payı
-    # sayesinde tek model çalıştığından (validator'lar devre dışı) en yüksek kaliteyi hedefliyoruz.
-    # Colab'da: `ollama serve` + `ollama pull gemma4:31b-it-bf16`
-    model: gemma4:31b-it-bf16
-    base_url: http://localhost:11434/v1
+    # Gemma 4 31B (dense, en güçlü tekil model), vLLM ile (bkz. colab_pipeline.ipynb) — Ollama'nın
+    # OpenAI-uyumlu endpoint'i thinking çıktısını content'e karıştırıp boş bırakıyordu; vLLM'in
+    # --reasoning-parser gemma4 bayrağı bunu ayırıyor. `model` alanı vllm serve'e verilen HF repo
+    # id'siyle birebir aynı olmalı (büyük/küçük harf dahil).
+    model: google/gemma-4-31B-it
+    base_url: http://localhost:8000/v1   # Colab tünelindeyken buraya https://xxxx.trycloudflare.com/v1 yaz
     api_key_env: null                  # hosted endpoint için env değişkeni adı (örn. OPENROUTER_API_KEY)
     temperature: 0.7
-    max_tokens: 800
+    max_tokens: 2000                   # reasoning + JSON çıktısına yer bırakmak için 800'den yükseltildi
 
 filters:
   max_answer_words: 5

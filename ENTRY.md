@@ -49,8 +49,9 @@ Pilot hedefi: **~1.000 soru** (≈ 600–1.000 pasaj).
 - **N = 4 açık kaynak model**, karışık aile/güçte (örn. Qwen3-32B, Llama 4 Scout, Gemma 4 26B + 1 küçük model
   olarak Gemma 4 E4B — zayıf model kasıtlı: hepsi çözerse soru "trivial" sayılıp elenir, zorluk bandı ancak
   spread varsa anlamlı olur).
-- Altyapı: **Colab GPU (G4 / RTX PRO 6000, ~96GB VRAM önerilir; T4/L4'te daha küçük tag'lerle de çalışır)**
-  üzerinde Ollama; gerekirse ucuz hosted endpoint takviyesi.
+- Altyapı: **Colab GPU (G4 / RTX PRO 6000, ~96GB VRAM önerilir; T4/L4'te daha küçük modellerle de
+  çalışır)** üzerinde vLLM (OpenAI-uyumlu sunucu, Cloudflare tüneliyle dışarı açılıyor — pipeline'ın
+  kendisi Colab dışında çalışır, bkz. README); gerekirse ucuz hosted endpoint takviyesi.
 - Her model soruyu **pasajla birlikte** (RC modu) cevaplar; cevaplar normalize edilip gold ile exact-match karşılaştırılır.
 - Normalizasyon: küçük harf, noktalama/ek boşluk temizliği, Türkçe karakter tutarlılığı; sayılarda rakam/yazı eşleme.
 
