@@ -1,0 +1,89 @@
+# Türkçe Verifiable QA pipeline konfigürasyonu (bkz. ENTRY.md)
+seed: 42
+data_dir: data
+
+source:
+  type: hf_dataset          # wikipedia_api (canlı MediaWiki API) | hf_dataset (herhangi bir HF dataset'i)
+
+  # source.type: hf_dataset iken kullanılır. Kolon adları datasete göre değişir;
+  # başka bir dataset'e geçmek için kodu değil sadece bu bloğu değiştir.
+  hf_dataset:
+    repo_id: BILGEM-AI/BILGE-Wiki-Tr-Plus
+    config_name: default
+    split: train
+    text_field: text                # ana metin kolonu (nokta ile nested: "a.b")
+    title_field: null                # yoksa metinden otomatik kısa başlık türetilir
+    url_field: metadata.url          # nested alan örneği
+    license: "CC BY-SA 4.0"          # dataset kartında lisans belirtilmediği için TR Wikipedia türevi olarak sabitlendi
+    source_name: BILGEM-AI/BILGE-Wiki-Tr-Plus
+    n_articles: 100
+    min_article_words: 300
+    shuffle: true
+    shuffle_buffer: 10000
+    extra_filters:                  # opsiyonel: herhangi bir (nested) alan üzerinde eşik filtresi
+      - field: metadata.quality_score
+        min: 3.0
+    # Başka bir HF dataset'ine örnek geçiş (yorum satırı):
+    # repo_id: wikimedia/wikipedia
+    # config_name: 20231101.tr
+    # text_field: text
+    # title_field: title
+    # url_field: url
+    # extra_filters: []
+
+  # source.type: wikipedia_api iken kullanılır (doğrudan MediaWiki API, rate-limit'e tabi).
+  wikipedia_api:
+    api_url: https://tr.wikipedia.org/w/api.php
+    mode: random            # random | category | titles
+    category: null          # mode: category ise "Kategori:" öneksiz ad
+    titles_file: null       # mode: titles ise satır başına bir madde adı
+    n_articles: 100
+    min_article_words: 300
+
+passages:
+  min_words: 200
+  max_words: 500
+  max_passages_per_article: 3
+
+generation:
+  questions_per_passage: 2
+  model:
+    name: generator
+    model: qwen2.5:14b-instruct        # Colab'da Ollama: `ollama serve` + `ollama pull qwen2.5:14b-instruct`
+    base_url: http://localhost:11434/v1
+    api_key_env: null                  # hosted endpoint için env değişkeni adı (örn. OPENROUTER_API_KEY)
+    temperature: 0.7
+    max_tokens: 800
+
+filters:
+  max_answer_words: 5
+  dedup_jaccard: 0.7
+
+solving:
+  max_workers: 4
+  solvers:
+    - name: qwen2.5-7b
+      model: qwen2.5:7b-instruct
+      base_url: http://localhost:11434/v1
+    - name: llama3.1-8b
+      model: llama3.1:8b-instruct-q4_K_M
+      base_url: http://localhost:11434/v1
+    - name: gemma2-9b
+      model: gemma2:9b-instruct-q4_K_M
+      base_url: http://localhost:11434/v1
+    # Güçlü bir hosted çözücü önerilir (bkz. ENTRY.md riskler):
+    # - name: deepseek-v3
+    #   model: deepseek/deepseek-chat
+    #   base_url: https://openrouter.ai/api/v1
+    #   api_key_env: OPENROUTER_API_KEY
+
+banding:
+  min_solved: 2            # bundan az çözen -> ele (çözülemez / gold şüpheli)
+  drop_trivial: true       # tüm çözücüler çözerse -> ele
+  hard_max_rate: 0.5       # solve_rate <= 0.5 -> hard
+  medium_max_rate: 0.75    # solve_rate <= 0.75 -> medium, üstü easy
+  test_fraction: 0.1
+
+publish:
+  repo_id: kullanici/turkish-verifiable-qa   # kendi HF kullanıcı adınla değiştir
+  private: true

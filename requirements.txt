@@ -1,0 +1,4 @@
+requests
+pyyaml
+datasets        # source.type: hf_dataset (fetch) ve publish aşaması için
+huggingface_hub # publish aşaması için
