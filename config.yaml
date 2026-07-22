@@ -49,10 +49,10 @@ generation:
   questions_per_passage: 2
   model:
     name: generator
-    # Gemma 4 31B (dense, en güçlü tekil model), q8_0 ile — G4'ün (~96GB VRAM) bol payı sayesinde
-    # üretimin en kalite-kritik adımında (Türkçe soru üretimi) 4-bit yerine 8-bit çalıştırılıyor.
-    # Colab'da: `ollama serve` + `ollama pull gemma4:31b-q8_0`
-    model: gemma4:31b-q8_0
+    # Gemma 4 31B (dense, en güçlü tekil model), bf16 (16-bit) ile — G4'ün (~96GB VRAM) bol payı
+    # sayesinde tek model çalıştığından (validator'lar devre dışı) en yüksek kaliteyi hedefliyoruz.
+    # Colab'da: `ollama serve` + `ollama pull gemma4:31b-it-bf16`
+    model: gemma4:31b-it-bf16
     base_url: http://localhost:11434/v1
     api_key_env: null                  # hosted endpoint için env değişkeni adı (örn. OPENROUTER_API_KEY)
     temperature: 0.7
@@ -64,20 +64,23 @@ filters:
 
 solving:
   max_workers: 4
-  solvers:
+  # Validator/çözücüler şimdilik devre dışı — sadece QA üretici tutuluyor. Liste boşken `solve`
+  # ve `band` aşamaları hatasız çalışır: her kaydı difficulty="unverified" ile geçirir (bkz.
+  # solve.py/band.py). Konsensüs doğrulamasını geri açmak için aşağıdaki blokları uncomment et.
+  solvers: []
     # Bilinçli aile/güç çeşitliliği: gerçek konsensüs için çözücülerin farklı kör noktaları olmalı.
-    - name: qwen3-32b
-      model: qwen3:32b
-      base_url: http://localhost:11434/v1
-    - name: llama4-scout
-      model: llama4:scout        # 109B toplam / 17B aktif MoE — ~65GB indirme, en yavaş çözücü
-      base_url: http://localhost:11434/v1
-    - name: gemma4-26b
-      model: gemma4:26b          # Google MoE (3.8B aktif), üreticiden farklı boyut/mimari
-      base_url: http://localhost:11434/v1
-    - name: gemma4-e4b
-      model: gemma4:e4b          # kasıtlı zayıf/küçük model — zorluk bandı ayrımı için gerekli spread
-      base_url: http://localhost:11434/v1
+    # - name: qwen3-32b
+    #   model: qwen3:32b
+    #   base_url: http://localhost:11434/v1
+    # - name: llama4-scout
+    #   model: llama4:scout        # 109B toplam / 17B aktif MoE — ~65GB indirme, en yavaş çözücü
+    #   base_url: http://localhost:11434/v1
+    # - name: gemma4-26b
+    #   model: gemma4:26b          # Google MoE (3.8B aktif), üreticiden farklı boyut/mimari
+    #   base_url: http://localhost:11434/v1
+    # - name: gemma4-e4b
+    #   model: gemma4:e4b          # kasıtlı zayıf/küçük model — zorluk bandı ayrımı için gerekli spread
+    #   base_url: http://localhost:11434/v1
     # Güçlü bir hosted çözücü önerilir (bkz. ENTRY.md riskler):
     # - name: deepseek-v3
     #   model: deepseek/deepseek-chat

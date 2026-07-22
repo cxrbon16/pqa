@@ -41,15 +41,23 @@ def run_solve(cfg, limit=None):
     if limit:
         records = records[:limit]
 
-    with ThreadPoolExecutor(max_workers=s.max_workers) as ex:
-        for i, rec in enumerate(records):
-            results = list(ex.map(lambda c: _solve_one(c, rec), clients))
-            rec["solver_answers"] = {name: ans for name, ans, _ in results}
-            rec["solver_results"] = {name: ok for name, _, ok in results}
-            rec["solve_count"] = sum(ok for _, _, ok in results)
-            rec["solve_rate"] = round(rec["solve_count"] / len(clients), 3)
-            if (i + 1) % 10 == 0:
-                print(f"  solve: {i + 1}/{len(records)} soru çözüldü")
+    if not clients:
+        print("solve: solving.solvers boş — doğrulama devre dışı, kayıtlar işaretlenmeden geçiyor")
+        for rec in records:
+            rec["solver_answers"] = {}
+            rec["solver_results"] = {}
+            rec["solve_count"] = 0
+            rec["solve_rate"] = None
+    else:
+        with ThreadPoolExecutor(max_workers=s.max_workers) as ex:
+            for i, rec in enumerate(records):
+                results = list(ex.map(lambda c: _solve_one(c, rec), clients))
+                rec["solver_answers"] = {name: ans for name, ans, _ in results}
+                rec["solver_results"] = {name: ok for name, _, ok in results}
+                rec["solve_count"] = sum(ok for _, _, ok in results)
+                rec["solve_rate"] = round(rec["solve_count"] / len(clients), 3)
+                if (i + 1) % 10 == 0:
+                    print(f"  solve: {i + 1}/{len(records)} soru çözüldü")
 
     out = os.path.join(cfg.data_dir, "05_solved.jsonl")
     write_jsonl(out, records)

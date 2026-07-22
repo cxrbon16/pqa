@@ -37,9 +37,19 @@ def run_band(cfg, limit=None):
     if limit:
         records = records[:limit]
 
+    verification_enabled = len(cfg.solving.solvers) > 0
+    if not verification_enabled:
+        print("band: solving.solvers boş — çözülebilirlik filtresi atlanıyor, "
+              "tüm kayıtlar difficulty='unverified' ile geçiyor")
+
     today = datetime.date.today().isoformat()
     kept, rejects = [], Counter()
     for rec in records:
+        if not verification_enabled:
+            rec["difficulty"] = "unverified"
+            rec["created_at"] = today
+            kept.append({k: rec.get(k) for k in FINAL_FIELDS})
+            continue
         n_solvers = len(rec["solver_results"])
         if rec["solve_count"] < b.min_solved:
             rejects["gold_şüpheli" if _gold_suspect(rec) else "çözülemez"] += 1

@@ -66,6 +66,11 @@ Pilot hedefi: **~1.000 soru** (≈ 600–1.000 pasaj).
 - **Gold güvencesi (2 katman)**: (a) span kuralı, (b) çözücüler kendi aralarında tutarlı ama gold'dan
   farklı bir cevapta birleşiyorsa soru elenir (gold muhtemelen hatalı).
 - Test split: bant filtresini geçen sorulardan örneklem + **elle gözden geçirme** (pilot ölçeğinde yapılabilir).
+- **"unverified" modu**: `solving.solvers` boş bırakılırsa (validator'lar geçici olarak kapalıyken,
+  örn. sadece üretici modelin çıktısını hızlıca toplamak için) `solve`/`band` hatasız çalışır ama
+  hiçbir çözülebilirlik kontrolü yapmaz — her kayıt `difficulty: "unverified"` ile geçer. Bu, projenin
+  "verifiable dataset" iddiasını karşılamaz; sadece ara/geçici bir çalışma modudur, çözücüler geri
+  açılmadan yayınlanacak bir sürüme dahil edilmemeli.
 
 ### 7. Çıktı
 - Ana format **JSONL** (ara aşamalar dahil her aşamanın çıktısı ayrı dosya).
