@@ -62,15 +62,18 @@ Aşamalar ve çıktıları:
 - **`wikipedia_api`**: doğrudan MediaWiki API'sinden canlı çekim (`source.wikipedia_api.*`). Rate-limit'e
   tabidir (429'a karşı `Retry-After` destekli backoff var), `hf_dataset`'e göre daha yavaştır.
 
-## Colab'da çalıştırma
+## Colab: GPU sunucusu + tünel, pipeline dışarıda
 
-Adım adım, çalıştırılabilir hücrelerle hazır bir defter: **[colab_pipeline.ipynb](colab_pipeline.ipynb)**
-([Colab'da aç](https://colab.research.google.com/github/cxrbon16/pqa/blob/main/colab_pipeline.ipynb)).
-Kapsadıkları: GPU kontrolü, repo klonlama, Ollama kurulup üretici + çözücü modellerin indirilmesi,
-`--limit` ile duman testi, Drive'a bağlanıp `data_dir`'i taşıyarak oturum kopmalarına dayanıklı hale
-getirme, tam çalıştırma ve HF'e yayınlama.
+`colab_pipeline.ipynb` ([Colab'da aç](https://colab.research.google.com/github/cxrbon16/pqa/blob/main/colab_pipeline.ipynb))
+artık pipeline'ın kendisini çalıştırmıyor — tek işi Ollama'yı GPU ile ayağa kaldırıp
+[Cloudflare Quick Tunnel](https://github.com/cloudflare/cloudflared) ile dışarıya açmak (hesap
+gerektirmez). Adımları: GPU kontrolü, Ollama kurulumu, üretici modelin (`gemma4:31b-it-bf16`)
+indirilmesi, GPU'da çalıştığının doğrulanması, tünel açılıp `https://xxxx.trycloudflare.com`
+URL'sinin yazdırılması.
 
-Tüm modeller OpenAI-uyumlu endpoint üzerinden çağrılır (`vqa/llm.py`) — Ollama, vLLM ve
-OpenRouter'ın üçü de bu arayüzü sunar; `config.yaml`'da `base_url` + `model` değiştirmek yeter.
-Hosted endpoint (örn. OpenRouter) için config'de `api_key_env: OPENROUTER_API_KEY` yaz ve
-ortam değişkenini ayarla.
+Pipeline (`fetch/passages/generate/filter/solve/band/publish`) bu repoyu klonlayan **herhangi bir
+makineden** çalışır; sadece `config.yaml` → `generation.model.base_url` (ve varsa `solving.solvers[].base_url`)
+alanlarını tünel URL'sine (`https://xxxx.trycloudflare.com/v1`) çevir. Tüm modeller OpenAI-uyumlu
+endpoint üzerinden çağrılır (`vqa/llm.py`) — Ollama, vLLM ve OpenRouter'ın üçü de bu arayüzü sunar.
+
+Colab sekmesi açık kalmalı: hem `ollama serve` hem `cloudflared` o çalışma zamanı sonlanınca ölür.
