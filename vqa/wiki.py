@@ -4,6 +4,7 @@ import time
 import urllib.parse
 
 import requests
+from tqdm import tqdm
 
 from .io_utils import write_jsonl
 
@@ -75,7 +76,8 @@ def run_fetch(cfg, limit=None):
         titles = fetch_random_titles(w.api_url, n)
 
     articles = []
-    for i, title in enumerate(titles):
+    bar = tqdm(titles, desc="fetch", unit="madde")
+    for title in bar:
         art = fetch_extract(w.api_url, title)
         time.sleep(0.5)
         if art is None or len(art["text"].split()) < w.min_article_words:
@@ -83,7 +85,7 @@ def run_fetch(cfg, limit=None):
         art["source"] = "tr.wikipedia"
         art["license"] = "CC BY-SA 4.0"
         articles.append(art)
-        print(f"  [{i + 1}/{len(titles)}] {art['title']} ({len(art['text'].split())} kelime)")
+        bar.set_postfix(kabul=len(articles), son=art["title"][:30])
 
     out = os.path.join(cfg.data_dir, "01_articles.jsonl")
     write_jsonl(out, articles)

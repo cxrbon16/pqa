@@ -3,6 +3,8 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 
+from tqdm import tqdm
+
 from .io_utils import read_jsonl, write_jsonl
 from .llm import client_from_cfg
 from .normalize import is_match
@@ -43,21 +45,24 @@ def run_solve(cfg, limit=None):
 
     if not clients:
         print("solve: solving.solvers boş — doğrulama devre dışı, kayıtlar işaretlenmeden geçiyor")
-        for rec in records:
+        for rec in tqdm(records, desc="solve(unverified)", unit="soru"):
             rec["solver_answers"] = {}
             rec["solver_results"] = {}
             rec["solve_count"] = 0
             rec["solve_rate"] = None
     else:
         with ThreadPoolExecutor(max_workers=s.max_workers) as ex:
-            for i, rec in enumerate(records):
+            bar = tqdm(records, desc="solve", unit="soru")
+            rate_sum, n_done = 0.0, 0
+            for rec in bar:
                 results = list(ex.map(lambda c: _solve_one(c, rec), clients))
                 rec["solver_answers"] = {name: ans for name, ans, _ in results}
                 rec["solver_results"] = {name: ok for name, _, ok in results}
                 rec["solve_count"] = sum(ok for _, _, ok in results)
                 rec["solve_rate"] = round(rec["solve_count"] / len(clients), 3)
-                if (i + 1) % 10 == 0:
-                    print(f"  solve: {i + 1}/{len(records)} soru çözüldü")
+                rate_sum += rec["solve_rate"]
+                n_done += 1
+                bar.set_postfix(ort_oran=round(rate_sum / n_done, 2))
 
     out = os.path.join(cfg.data_dir, "05_solved.jsonl")
     write_jsonl(out, records)

@@ -2,6 +2,8 @@
 import os
 import re
 
+from tqdm import tqdm
+
 from .io_utils import read_jsonl, write_jsonl
 from .normalize import tr_lower
 
@@ -59,7 +61,8 @@ def run_passages(cfg, limit=None):
         articles = articles[:limit]
 
     records, pid = [], 0
-    for art in articles:
+    bar = tqdm(articles, desc="passages", unit="madde")
+    for art in bar:
         count = 0
         for title, body in split_sections(art["text"]):
             if tr_lower(title) in SKIP_SECTIONS or _looks_like_list(body):
@@ -78,6 +81,7 @@ def run_passages(cfg, limit=None):
                     "source_url": art["url"],
                     "license": art["license"],
                 })
+        bar.set_postfix(pasaj=len(records))
 
     out = os.path.join(cfg.data_dir, "02_passages.jsonl")
     write_jsonl(out, records)

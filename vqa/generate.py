@@ -1,6 +1,8 @@
 """Aşama 3 — pasajlardan soru üretimi (generator model)."""
 import os
 
+from tqdm import tqdm
+
 from .io_utils import read_jsonl, write_jsonl
 from .llm import client_from_cfg, extract_json
 from .normalize import contains_span
@@ -27,7 +29,8 @@ def run_generate(cfg, limit=None):
         passages = passages[:limit]
 
     records, failed = [], 0
-    for i, p in enumerate(passages):
+    bar = tqdm(passages, desc="generate", unit="pasaj")
+    for p in bar:
         prompt = GEN_PROMPT.format(n=g.questions_per_passage,
                                    max_ans=cfg.filters.max_answer_words,
                                    passage=p["passage"])
@@ -35,8 +38,9 @@ def run_generate(cfg, limit=None):
             raw = client.chat([{"role": "user", "content": prompt}])
             items = extract_json(raw)
         except Exception as e:  # noqa: BLE001
-            print(f"  ! {p['passage_id']}: üretim hatası: {e}")
+            tqdm.write(f"  ! {p['passage_id']}: üretim hatası: {e}")
             failed += 1
+            bar.set_postfix(soru=len(records), hata=failed)
             continue
         if isinstance(items, dict):
             items = [items]
@@ -54,8 +58,7 @@ def run_generate(cfg, limit=None):
                 "answer_in_passage": contains_span(p["passage"], a),
                 "generator_model": client.model,
             })
-        if (i + 1) % 10 == 0:
-            print(f"  generate: {i + 1}/{len(passages)} pasaj işlendi")
+        bar.set_postfix(soru=len(records), hata=failed)
 
     out = os.path.join(cfg.data_dir, "03_candidates.jsonl")
     write_jsonl(out, records)

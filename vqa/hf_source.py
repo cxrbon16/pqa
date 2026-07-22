@@ -6,6 +6,8 @@ sadece source.hf_dataset.* alanlarını yeni dataset'in kolon adlarına göre g�
 """
 import os
 
+from tqdm import tqdm
+
 from .io_utils import write_jsonl
 
 
@@ -72,6 +74,7 @@ def run_fetch_hf(cfg, limit=None):
     extra_filters = h.get("extra_filters")
 
     articles, seen = [], 0
+    bar = tqdm(total=n, desc="fetch(hf)", unit="madde")
     for row in ds:
         if len(articles) >= n:
             break
@@ -90,8 +93,9 @@ def run_fetch_hf(cfg, limit=None):
             "source": source_name,
             "license": license_,
         })
-        if len(articles) % 20 == 0:
-            print(f"  [{len(articles)}/{n}] {articles[-1]['title']} ({len(body.split())} kelime)")
+        bar.update(1)
+        bar.set_postfix(taranan=seen, son=title[:30])
+    bar.close()
 
     out = os.path.join(cfg.data_dir, "01_articles.jsonl")
     write_jsonl(out, articles)

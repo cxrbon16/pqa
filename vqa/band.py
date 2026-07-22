@@ -4,6 +4,8 @@ import os
 import random
 from collections import Counter
 
+from tqdm import tqdm
+
 from .io_utils import read_jsonl, write_jsonl
 from .normalize import is_match
 
@@ -44,11 +46,13 @@ def run_band(cfg, limit=None):
 
     today = datetime.date.today().isoformat()
     kept, rejects = [], Counter()
-    for rec in records:
+    bar = tqdm(records, desc="band", unit="soru")
+    for rec in bar:
         if not verification_enabled:
             rec["difficulty"] = "unverified"
             rec["created_at"] = today
             kept.append({k: rec.get(k) for k in FINAL_FIELDS})
+            bar.set_postfix(kaldı=len(kept))
             continue
         n_solvers = len(rec["solver_results"])
         if rec["solve_count"] < b.min_solved:
@@ -60,6 +64,7 @@ def run_band(cfg, limit=None):
         rec["difficulty"] = _difficulty(rec["solve_rate"], b)
         rec["created_at"] = today
         kept.append({k: rec.get(k) for k in FINAL_FIELDS})
+        bar.set_postfix(kaldı=len(kept), elendi=sum(rejects.values()))
 
     write_jsonl(os.path.join(cfg.data_dir, "06_final.jsonl"), kept)
     print(f"band: {len(kept)}/{len(records)} kaldı")

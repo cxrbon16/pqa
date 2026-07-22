@@ -2,6 +2,8 @@
 import os
 from collections import Counter
 
+from tqdm import tqdm
+
 from .io_utils import read_jsonl, write_jsonl
 from .normalize import norm
 
@@ -41,7 +43,8 @@ def run_filters(cfg, limit=None):
     # dedup: dataset genelinde birebir tekrar + aynı pasaj içinde benzerlik eşiği
     kept, rejects = [], Counter()
     seen_exact, passage_tokens = set(), {}
-    for rec in records:
+    bar = tqdm(records, desc="filter", unit="soru")
+    for rec in bar:
         reason = _check(rec, f)
         if reason is None:
             key = (norm(rec["question"]), norm(rec["answer"]))
@@ -58,6 +61,7 @@ def run_filters(cfg, limit=None):
             rejects[reason] += 1
         else:
             kept.append(rec)
+        bar.set_postfix(kaldı=len(kept), elendi=sum(rejects.values()))
 
     out = os.path.join(cfg.data_dir, "04_filtered.jsonl")
     write_jsonl(out, kept)
