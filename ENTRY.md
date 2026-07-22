@@ -50,7 +50,7 @@ Pilot hedefi: **~1.000 soru** (≈ 600–1.000 pasaj).
   olarak Gemma 4 E4B — zayıf model kasıtlı: hepsi çözerse soru "trivial" sayılıp elenir, zorluk bandı ancak
   spread varsa anlamlı olur).
 - Altyapı: **Colab GPU (G4 / RTX PRO 6000, ~96GB VRAM önerilir; T4/L4'te daha küçük modellerle de
-  çalışır)** üzerinde vLLM (OpenAI-uyumlu sunucu, Cloudflare tüneliyle dışarı açılıyor — pipeline'ın
+  çalışır)** üzerinde Ollama (OpenAI-uyumlu sunucu, Cloudflare tüneliyle dışarı açılıyor — pipeline'ın
   kendisi Colab dışında çalışır, bkz. README); gerekirse ucuz hosted endpoint takviyesi.
 - Her model soruyu **pasajla birlikte** (RC modu) cevaplar; cevaplar normalize edilip gold ile exact-match karşılaştırılır.
 - Normalizasyon: küçük harf, noktalama/ek boşluk temizliği, Türkçe karakter tutarlılığı; sayılarda rakam/yazı eşleme.

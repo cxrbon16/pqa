@@ -65,17 +65,17 @@ Aşamalar ve çıktıları:
 ## Colab: GPU sunucusu + tünel, pipeline dışarıda
 
 `colab_pipeline.ipynb` ([Colab'da aç](https://colab.research.google.com/github/cxrbon16/pqa/blob/main/colab_pipeline.ipynb))
-artık pipeline'ın kendisini çalıştırmıyor — tek işi **vLLM**'i GPU ile ayağa kaldırıp
+artık pipeline'ın kendisini çalıştırmıyor — tek işi **Ollama**'yı GPU ile ayağa kaldırıp
 [Cloudflare Quick Tunnel](https://github.com/cloudflare/cloudflared) ile dışarıya açmak (hesap
-gerektirmez). Adımları: GPU kontrolü, vLLM (nightly) kurulumu, üretici modelin
-(`google/gemma-4-31B-it`, gated değil) indirilip `--reasoning-parser gemma4` ile servis edilmesi,
-GPU'da çalıştığının doğrulanması, tünel açılıp `https://xxxx.trycloudflare.com` URL'sinin
-yazdırılması. (Ollama'dan vLLM'e geçildi çünkü Ollama'nın OpenAI-uyumlu endpoint'i Gemma 4'ün
-thinking çıktısını `content` alanına karıştırıp boş bırakıyordu.)
+gerektirmez). Adımları: GPU kontrolü, Ollama kurulumu, üretici modelin (`gemma4:31b-it-bf16`)
+indirilmesi, GPU'da çalıştığının doğrulanması, tünel açılıp `https://xxxx.trycloudflare.com`
+URL'sinin yazdırılması. (vLLM denendi ama nightly build'in CUDA sürüm uyumsuzlukları — bkz. git
+geçmişi — çözülemedi; Ollama'ya geri dönüldü. Gemma 4'ün thinking çıktısının `content`'i boş/yarım
+bırakması sorunu `max_tokens`'ı 800'den 2000'e çıkararak hafifletildi.)
 
 Pipeline (`fetch/passages/generate/filter/solve/band/publish`) bu repoyu klonlayan **herhangi bir
 makineden** çalışır; sadece `config.yaml` → `generation.model.base_url` (ve varsa `solving.solvers[].base_url`)
 alanlarını tünel URL'sine (`https://xxxx.trycloudflare.com/v1`) çevir. Tüm modeller OpenAI-uyumlu
 endpoint üzerinden çağrılır (`vqa/llm.py`) — Ollama, vLLM ve OpenRouter'ın üçü de bu arayüzü sunar.
 
-Colab sekmesi açık kalmalı: hem `vllm serve` hem `cloudflared` o çalışma zamanı sonlanınca ölür.
+Colab sekmesi açık kalmalı: hem `ollama serve` hem `cloudflared` o çalışma zamanı sonlanınca ölür.
