@@ -62,18 +62,15 @@ Aşamalar ve çıktıları:
 - **`wikipedia_api`**: doğrudan MediaWiki API'sinden canlı çekim (`source.wikipedia_api.*`). Rate-limit'e
   tabidir (429'a karşı `Retry-After` destekli backoff var), `hf_dataset`'e göre daha yavaştır.
 
-## Colab notları
+## Colab'da çalıştırma
+
+Adım adım, çalıştırılabilir hücrelerle hazır bir defter: **[colab_pipeline.ipynb](colab_pipeline.ipynb)**
+([Colab'da aç](https://colab.research.google.com/github/cxrbon16/pqa/blob/main/colab_pipeline.ipynb)).
+Kapsadıkları: GPU kontrolü, repo klonlama, Ollama kurulup üretici + çözücü modellerin indirilmesi,
+`--limit` ile duman testi, Drive'a bağlanıp `data_dir`'i taşıyarak oturum kopmalarına dayanıklı hale
+getirme, tam çalıştırma ve HF'e yayınlama.
 
 Tüm modeller OpenAI-uyumlu endpoint üzerinden çağrılır (`vqa/llm.py`) — Ollama, vLLM ve
 OpenRouter'ın üçü de bu arayüzü sunar; `config.yaml`'da `base_url` + `model` değiştirmek yeter.
-
-```bash
-# Colab hücresinde Ollama:
-curl -fsSL https://ollama.com/install.sh | sh
-ollama serve &
-ollama pull qwen2.5:7b-instruct
-python -m vqa all --limit 10   # önce küçük smoke test
-```
-
 Hosted endpoint (örn. OpenRouter) için config'de `api_key_env: OPENROUTER_API_KEY` yaz ve
-ortam değişkenini ayarla. HF publish için `huggingface-cli login` gerekir.
+ortam değişkenini ayarla.

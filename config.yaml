@@ -49,7 +49,10 @@ generation:
   questions_per_passage: 2
   model:
     name: generator
-    model: qwen2.5:14b-instruct        # Colab'da Ollama: `ollama serve` + `ollama pull qwen2.5:14b-instruct`
+    # Gemma 4 31B (dense, en güçlü tekil model), q8_0 ile — G4'ün (~96GB VRAM) bol payı sayesinde
+    # üretimin en kalite-kritik adımında (Türkçe soru üretimi) 4-bit yerine 8-bit çalıştırılıyor.
+    # Colab'da: `ollama serve` + `ollama pull gemma4:31b-q8_0`
+    model: gemma4:31b-q8_0
     base_url: http://localhost:11434/v1
     api_key_env: null                  # hosted endpoint için env değişkeni adı (örn. OPENROUTER_API_KEY)
     temperature: 0.7
@@ -62,14 +65,18 @@ filters:
 solving:
   max_workers: 4
   solvers:
-    - name: qwen2.5-7b
-      model: qwen2.5:7b-instruct
+    # Bilinçli aile/güç çeşitliliği: gerçek konsensüs için çözücülerin farklı kör noktaları olmalı.
+    - name: qwen3-32b
+      model: qwen3:32b
       base_url: http://localhost:11434/v1
-    - name: llama3.1-8b
-      model: llama3.1:8b-instruct-q4_K_M
+    - name: llama4-scout
+      model: llama4:scout        # 109B toplam / 17B aktif MoE — ~65GB indirme, en yavaş çözücü
       base_url: http://localhost:11434/v1
-    - name: gemma2-9b
-      model: gemma2:9b-instruct-q4_K_M
+    - name: gemma4-26b
+      model: gemma4:26b          # Google MoE (3.8B aktif), üreticiden farklı boyut/mimari
+      base_url: http://localhost:11434/v1
+    - name: gemma4-e4b
+      model: gemma4:e4b          # kasıtlı zayıf/küçük model — zorluk bandı ayrımı için gerekli spread
       base_url: http://localhost:11434/v1
     # Güçlü bir hosted çözücü önerilir (bkz. ENTRY.md riskler):
     # - name: deepseek-v3

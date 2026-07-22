@@ -46,8 +46,11 @@ Pilot hedefi: **~1.000 soru** (≈ 600–1.000 pasaj).
 - **Format**: cevap ≤ ~5 kelime; soru tek soru işareti; pasaja referans ("yukarıdaki metne göre" vb.) temizliği.
 
 ### 5. Çözücü grubu (solvers)
-- **N = 4–5 açık kaynak model**, karışık güçte (örn. Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B + 1 küçük model).
-- Altyapı: **Colab GPU (T4/L4)** üzerinde vLLM/Ollama, 4-bit quantize; gerekirse ucuz hosted endpoint takviyesi.
+- **N = 4 açık kaynak model**, karışık aile/güçte (örn. Qwen3-32B, Llama 4 Scout, Gemma 4 26B + 1 küçük model
+  olarak Gemma 4 E4B — zayıf model kasıtlı: hepsi çözerse soru "trivial" sayılıp elenir, zorluk bandı ancak
+  spread varsa anlamlı olur).
+- Altyapı: **Colab GPU (G4 / RTX PRO 6000, ~96GB VRAM önerilir; T4/L4'te daha küçük tag'lerle de çalışır)**
+  üzerinde Ollama; gerekirse ucuz hosted endpoint takviyesi.
 - Her model soruyu **pasajla birlikte** (RC modu) cevaplar; cevaplar normalize edilip gold ile exact-match karşılaştırılır.
 - Normalizasyon: küçük harf, noktalama/ek boşluk temizliği, Türkçe karakter tutarlılığı; sayılarda rakam/yazı eşleme.
 
@@ -80,7 +83,7 @@ Pilot hedefi: **~1.000 soru** (≈ 600–1.000 pasaj).
   "source_url": "https://…",
   "license": "CC BY-SA 4.0",
   "difficulty": "medium",
-  "solver_results": {"qwen2.5-7b": true, "llama3.1-8b": false, "...": true},
+  "solver_results": {"qwen3-32b": true, "llama4-scout": false, "...": true},
   "solve_rate": 0.6,
   "generator_model": "…",
   "created_at": "2026-07-16"
